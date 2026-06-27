@@ -66,3 +66,6 @@ RELEASE_INFO.md
 # Auth tokens and secrets
 auth_token.txt
 secrets.json
+
+# Screen UI folder (local development only)
+Screen_ui/

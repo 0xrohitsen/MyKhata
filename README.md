@@ -14,12 +14,16 @@
 
 ## 📱 App Screenshots
 
-<div align="center">
-  <img src="assets/images/screenshots/login-screen.png" width="200" alt="Secure Google Sign-In">
-  <img src="assets/images/screenshots/home-screen.png" width="200" alt="Clean Dashboard with Balance Overview">
-  <img src="assets/images/screenshots/customer-details-screen.png" width="200" alt="Detailed Customer Transaction History">
-  <img src="assets/images/screenshots/settings-screen.png" width="200" alt="Settings with Theme Options">
-</div>
+<p align="center">
+  <img src="assets/images/screenshots/login-screen.png" width="24%" alt="Secure Google Sign-In">
+  <img src="assets/images/screenshots/home-screen.png" width="24%" alt="Dashboard & Customer List">
+  <img src="assets/images/screenshots/customer-details-screen.png" width="24%" alt="Transaction History">  
+  <img src="assets/images/screenshots/settings-screen.png" width="24%" alt="Settings & Themes">
+</p>
+
+<p align="center">
+  <em>Secure Google Sign-In • Dashboard & Customer List • Transaction History • Settings & Themes</em>
+</p>
 
 ---
 

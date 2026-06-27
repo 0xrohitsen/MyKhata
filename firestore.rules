@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Match the user profile document and subcollections
+    match /users/{userId} {
+      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
+
+      // Match user's customers subcollection
+      match /customers/{customerId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+
+        // Match transactions subcollection under a customer
+        match /transactions/{transactionId} {
+          allow read, write: if request.auth != null && request.auth.uid == userId;
+        }
+      }
+    }
+
+    // Deny everything else by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

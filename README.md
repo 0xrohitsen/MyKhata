@@ -20,14 +20,6 @@
 - 📱 **Works Offline** - Full functionality without internet
 - ☁️ **Cloud Sync** - Data syncs across your devices automatically
 
-## 📱 Screenshots
-
-<div align="center">
-  <img src="https://via.placeholder.com/200x400/13434B/FFFFFF?text=Login+Screen" width="180" alt="Login">
-  <img src="https://via.placeholder.com/200x400/13434B/FFFFFF?text=Home+Screen" width="180" alt="Home">
-  <img src="https://via.placeholder.com/200x400/13434B/FFFFFF?text=Customer+Details" width="180" alt="Customer">
-</div>
-
 ## 🚀 Quick Start
 
 1. **Download** the APK using the button above

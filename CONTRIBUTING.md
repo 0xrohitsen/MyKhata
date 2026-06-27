@@ -1,4 +1,4 @@
-# Contributing to My Khata
+8# Contributing to My Khata
 
 First off, thank you for considering contributing to My Khata! 🎉
 

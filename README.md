@@ -15,10 +15,10 @@
 ## 📱 App Screenshots
 
 <div align="center">
-  <img src="Screen_ui/login-screen/screen.png" width="200" alt="Secure Google Sign-In">
-  <img src="Screen_ui/home-screen/screen.png" width="200" alt="Clean Dashboard with Balance Overview">
-  <img src="Screen_ui/customer-detalish-screen/screen.png" width="200" alt="Detailed Customer Transaction History">
-  <img src="Screen_ui/setting screen/screen.png" width="200" alt="Settings with Theme Options">
+  <img src="assets/images/screenshots/login-screen.png" width="200" alt="Secure Google Sign-In">
+  <img src="assets/images/screenshots/home-screen.png" width="200" alt="Clean Dashboard with Balance Overview">
+  <img src="assets/images/screenshots/customer-details-screen.png" width="200" alt="Detailed Customer Transaction History">
+  <img src="assets/images/screenshots/settings-screen.png" width="200" alt="Settings with Theme Options">
 </div>
 
 ---

@@ -5,7 +5,7 @@
   <br>
   <h3>Track money you give and receive with a simple digital ledger</h3>
   
-  [![Download APK](https://img.shields.io/badge/Download-APK-blue?style=for-the-badge&logo=android)](https://github.com/0xrohitsen/MyKhata/releases/download/v1.0.0/app-release.apk)
+  [![Download APK](https://img.shields.io/badge/Download-APK-blue?style=for-the-badge&logo=android)](https://github.com/0xrohitsen/MyKhata/releases/download/v1.0.1/app-release.apk)
   
   <p>🚀 <strong>55.5MB</strong> • 📱 <strong>Android 8.0+</strong> • 🆓 <strong>Free & Open Source</strong></p>
 </div>

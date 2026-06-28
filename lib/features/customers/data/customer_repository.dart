@@ -27,13 +27,13 @@ class CustomerRepository {
   }
 
   // Add a new customer
-  Future<DocumentReference> addCustomer({
+  void addCustomer({
     required String name,
     String? phone,
     String? notes,
   }) {
     final now = Timestamp.now();
-    return _customersRef.add({
+    _customersRef.add({
       'name': name,
       'phone': phone,
       'notes': notes,
@@ -46,18 +46,15 @@ class CustomerRepository {
   }
 
   // Delete a customer along with their transactions subcollection
-  Future<void> deleteCustomer(String customerId) async {
-    // Delete all transactions under the customer first
-    final transactions = await _customersRef
-        .doc(customerId)
-        .collection('transactions')
-        .get();
-    final batch = _firestore.batch();
-    for (final doc in transactions.docs) {
-      batch.delete(doc.reference);
-    }
-    batch.delete(_customersRef.doc(customerId));
-    await batch.commit();
+  void deleteCustomer(String customerId) {
+    _customersRef.doc(customerId).collection('transactions').get().then((transactions) {
+      final batch = _firestore.batch();
+      for (final doc in transactions.docs) {
+        batch.delete(doc.reference);
+      }
+      batch.delete(_customersRef.doc(customerId));
+      batch.commit().catchError((_) {});
+    }).catchError((_) {});
   }
 
   // Watch transactions for a customer
@@ -71,56 +68,42 @@ class CustomerRepository {
   }
 
   // Add a transaction and atomically update customer's balance
-  Future<void> addTransaction({
+  void addTransaction({
     required String customerId,
     required String type, // 'gave' or 'got'
     required int amountInPaise,
     String? note,
-  }) async {
+  }) {
     final customerDocRef = _customersRef.doc(customerId);
     final transactionCollectionRef = customerDocRef.collection('transactions');
     final now = Timestamp.now();
+    final batch = _firestore.batch();
 
-    await _firestore.runTransaction((transaction) async {
-      // 1. Read customer current balance
-      final customerSnapshot = await transaction.get(customerDocRef);
-      if (!customerSnapshot.exists) {
-        throw Exception("Customer does not exist!");
-      }
+    int balanceDelta = amountInPaise;
+    if (type == 'got') {
+      balanceDelta = -amountInPaise;
+    }
 
-      final currentBalance =
-          (customerSnapshot.data() as Map<String, dynamic>)['balance']
-              as int? ??
-          0;
-
-      // 2. Calculate new balance: balance = Σ(gave) - Σ(got)
-      int balanceDelta = amountInPaise;
-      if (type == 'got') {
-        balanceDelta = -amountInPaise;
-      }
-      final newBalance = currentBalance + balanceDelta;
-
-      // 3. Write transaction document
-      final newTransactionRef = transactionCollectionRef.doc();
-      transaction.set(newTransactionRef, {
-        'type': type,
-        'amount': amountInPaise,
-        'note': note,
-        'createdAt': now,
-      });
-
-      // 4. Update customer balance and cache last transaction metadata
-      transaction.update(customerDocRef, {
-        'balance': newBalance,
-        'updatedAt': now,
-        'lastTxNote': note ?? (type == 'gave' ? 'Gave money' : 'Got money'),
-        'lastTxTime': now,
-      });
+    final newTransactionRef = transactionCollectionRef.doc();
+    batch.set(newTransactionRef, {
+      'type': type,
+      'amount': amountInPaise,
+      'note': note,
+      'createdAt': now,
     });
+
+    batch.update(customerDocRef, {
+      'balance': FieldValue.increment(balanceDelta),
+      'updatedAt': now,
+      'lastTxNote': note ?? (type == 'gave' ? 'Gave money' : 'Got money'),
+      'lastTxTime': now,
+    });
+
+    batch.commit().catchError((_) {});
   }
 
   // Edit a transaction and atomically update customer's balance
-  Future<void> updateTransaction({
+  void updateTransaction({
     required String customerId,
     required String transactionId,
     required String type,
@@ -128,96 +111,69 @@ class CustomerRepository {
     String? note,
     required String oldType,
     required int oldAmountInPaise,
-  }) async {
+  }) {
     final customerDocRef = _customersRef.doc(customerId);
-    final transactionDocRef = customerDocRef
-        .collection('transactions')
-        .doc(transactionId);
+    final transactionDocRef = customerDocRef.collection('transactions').doc(transactionId);
     final now = Timestamp.now();
+    final batch = _firestore.batch();
 
-    await _firestore.runTransaction((transaction) async {
-      final customerSnapshot = await transaction.get(customerDocRef);
-      if (!customerSnapshot.exists) {
-        throw Exception("Customer does not exist!");
-      }
+    // Reverse old transaction balance change
+    int oldBalanceDelta = oldAmountInPaise;
+    if (oldType == 'got') {
+      oldBalanceDelta = -oldAmountInPaise;
+    }
 
-      final currentBalance =
-          (customerSnapshot.data() as Map<String, dynamic>)['balance']
-              as int? ??
-          0;
+    // Apply new transaction balance change
+    int newBalanceDelta = amountInPaise;
+    if (type == 'got') {
+      newBalanceDelta = -amountInPaise;
+    }
+    
+    // Net change to apply to current balance
+    final netDelta = newBalanceDelta - oldBalanceDelta;
 
-      // Reverse old transaction balance change
-      int oldBalanceDelta = oldAmountInPaise;
-      if (oldType == 'got') {
-        oldBalanceDelta = -oldAmountInPaise;
-      }
-      int tempBalance = currentBalance - oldBalanceDelta;
-
-      // Apply new transaction balance change
-      int newBalanceDelta = amountInPaise;
-      if (type == 'got') {
-        newBalanceDelta = -amountInPaise;
-      }
-      final newBalance = tempBalance + newBalanceDelta;
-
-      // Update transaction document
-      transaction.update(transactionDocRef, {
-        'type': type,
-        'amount': amountInPaise,
-        'note': note,
-      });
-
-      // Update customer balance and cache last transaction metadata
-      transaction.update(customerDocRef, {
-        'balance': newBalance,
-        'updatedAt': now,
-        'lastTxNote': note ?? (type == 'gave' ? 'Gave money' : 'Got money'),
-        'lastTxTime': now,
-      });
+    batch.update(transactionDocRef, {
+      'type': type,
+      'amount': amountInPaise,
+      'note': note,
     });
+
+    batch.update(customerDocRef, {
+      'balance': FieldValue.increment(netDelta),
+      'updatedAt': now,
+      'lastTxNote': note ?? (type == 'gave' ? 'Gave money' : 'Got money'),
+      'lastTxTime': now,
+    });
+
+    batch.commit().catchError((_) {});
   }
 
   // Delete a transaction and atomically update customer's balance
-  Future<void> deleteTransaction({
+  void deleteTransaction({
     required String customerId,
     required String transactionId,
     required String type,
     required int amountInPaise,
-  }) async {
+  }) {
     final customerDocRef = _customersRef.doc(customerId);
-    final transactionDocRef = customerDocRef
-        .collection('transactions')
-        .doc(transactionId);
+    final transactionDocRef = customerDocRef.collection('transactions').doc(transactionId);
     final now = Timestamp.now();
+    final batch = _firestore.batch();
 
-    await _firestore.runTransaction((transaction) async {
-      final customerSnapshot = await transaction.get(customerDocRef);
-      if (!customerSnapshot.exists) {
-        throw Exception("Customer does not exist!");
-      }
+    int balanceDelta = amountInPaise;
+    if (type == 'got') {
+      balanceDelta = -amountInPaise;
+    }
 
-      final currentBalance =
-          (customerSnapshot.data() as Map<String, dynamic>)['balance']
-              as int? ??
-          0;
+    batch.delete(transactionDocRef);
 
-      // Reverse transaction balance change: balance = currentBalance - delta
-      int balanceDelta = amountInPaise;
-      if (type == 'got') {
-        balanceDelta = -amountInPaise;
-      }
-      final newBalance = currentBalance - balanceDelta;
-
-      // Delete transaction document
-      transaction.delete(transactionDocRef);
-
-      // Update customer balance and cache last transaction metadata
-      transaction.update(customerDocRef, {
-        'balance': newBalance,
-        'updatedAt': now,
-        'lastTxNote': 'Transaction deleted',
-        'lastTxTime': now,
-      });
+    batch.update(customerDocRef, {
+      'balance': FieldValue.increment(-balanceDelta),
+      'updatedAt': now,
+      'lastTxNote': 'Transaction deleted',
+      'lastTxTime': now,
     });
+
+    batch.commit().catchError((_) {});
   }
 }

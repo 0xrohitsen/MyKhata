@@ -211,24 +211,16 @@ class CustomerDetailsScreen extends ConsumerWidget {
     );
     if (confirmed == true) {
       final repo = ref.read(customerRepositoryProvider);
-      try {
-        await repo.deleteTransaction(
-          customerId: customerId,
-          transactionId: transactionId,
-          type: type,
-          amountInPaise: amountInPaise,
-        );
-        if (context.mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Transaction deleted')));
-        }
-      } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Error: $e')));
-        }
+      repo.deleteTransaction(
+        customerId: customerId,
+        transactionId: transactionId,
+        type: type,
+        amountInPaise: amountInPaise,
+      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Transaction deleted')));
       }
     }
   }
@@ -259,17 +251,10 @@ class CustomerDetailsScreen extends ConsumerWidget {
     if (confirmed != true) {
       return;
     }
-    try {
-      await ref.read(customerRepositoryProvider).deleteCustomer(customerId);
-      if (context.mounted) {
-        context.go('/home');
-      }
-    } catch (error) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not delete customer: $error')),
-        );
-      }
+    
+    ref.read(customerRepositoryProvider).deleteCustomer(customerId);
+    if (context.mounted) {
+      context.go('/home');
     }
   }
 
@@ -937,7 +922,6 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
-  bool _isSaving = false;
 
   @override
   void initState() {
@@ -958,49 +942,36 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
     super.dispose();
   }
 
-  Future<void> _save() async {
+  void _save() {
     if (!(_formKey.currentState?.validate() ?? false)) {
       return;
     }
-    setState(() => _isSaving = true);
 
     final amountDouble = double.tryParse(_amountController.text.trim()) ?? 0.0;
     final amountInPaise = (amountDouble * 100).round();
     final note = _noteController.text.trim();
     final repo = ref.read(customerRepositoryProvider);
 
-    try {
-      if (widget.isEditing) {
-        await repo.updateTransaction(
-          customerId: widget.customerId,
-          transactionId: widget.transactionId!,
-          type: widget.type,
-          amountInPaise: amountInPaise,
-          note: note.isNotEmpty ? note : null,
-          oldType: widget.type,
-          oldAmountInPaise: widget.oldAmountInPaise!,
-        );
-      } else {
-        await repo.addTransaction(
-          customerId: widget.customerId,
-          type: widget.type,
-          amountInPaise: amountInPaise,
-          note: note.isNotEmpty ? note : null,
-        );
-      }
-      if (mounted) {
-        Navigator.of(context).pop();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isSaving = false);
-      }
+    if (widget.isEditing) {
+      repo.updateTransaction(
+        customerId: widget.customerId,
+        transactionId: widget.transactionId!,
+        type: widget.type,
+        amountInPaise: amountInPaise,
+        note: note.isNotEmpty ? note : null,
+        oldType: widget.type,
+        oldAmountInPaise: widget.oldAmountInPaise!,
+      );
+    } else {
+      repo.addTransaction(
+        customerId: widget.customerId,
+        type: widget.type,
+        amountInPaise: amountInPaise,
+        note: note.isNotEmpty ? note : null,
+      );
+    }
+    if (mounted) {
+      Navigator.of(context).pop();
     }
   }
 
@@ -1178,7 +1149,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: FilledButton(
-                        onPressed: _isSaving ? null : _save,
+                        onPressed: _save,
                         style: FilledButton.styleFrom(
                           backgroundColor: themeColor,
                           foregroundColor: Colors.white,
@@ -1187,22 +1158,13 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
                             borderRadius: BorderRadius.circular(14),
                           ),
                         ),
-                        child: _isSaving
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.5,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Text(
-                                'Save Record',
-                                style: TextStyle(
-                                  fontFamily: 'Noto Sans',
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
+                        child: const Text(
+                          'Save Record',
+                          style: TextStyle(
+                            fontFamily: 'Noto Sans',
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
                     ),
                   ],

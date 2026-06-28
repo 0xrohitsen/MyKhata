@@ -15,7 +15,6 @@ class _AddCustomerScreenState extends ConsumerState<AddCustomerScreen> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _notesController = TextEditingController();
-  bool _isSaving = false;
   bool _isNameEmpty = true;
 
   @override
@@ -42,41 +41,23 @@ class _AddCustomerScreenState extends ConsumerState<AddCustomerScreen> {
     super.dispose();
   }
 
-  Future<void> _saveCustomer() async {
+  void _saveCustomer() {
     if (!(_formKey.currentState?.validate() ?? false)) {
       return;
     }
-
-    setState(() {
-      _isSaving = true;
-    });
 
     final repository = ref.read(customerRepositoryProvider);
     final name = _nameController.text.trim();
     final phone = _phoneController.text.trim();
     final notes = _notesController.text.trim();
 
-    try {
-      await repository.addCustomer(
-        name: name,
-        phone: phone.isNotEmpty ? phone : null,
-        notes: notes.isNotEmpty ? notes : null,
-      );
-      if (mounted) {
-        Navigator.of(context).pop();
-      }
-    } catch (error) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save: ${error.toString()}')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSaving = false;
-        });
-      }
+    repository.addCustomer(
+      name: name,
+      phone: phone.isNotEmpty ? phone : null,
+      notes: notes.isNotEmpty ? notes : null,
+    );
+    if (mounted) {
+      Navigator.of(context).pop();
     }
   }
 
@@ -211,9 +192,7 @@ class _AddCustomerScreenState extends ConsumerState<AddCustomerScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: FilledButton(
-                        onPressed: (_isNameEmpty || _isSaving)
-                            ? null
-                            : _saveCustomer,
+                        onPressed: _isNameEmpty ? null : _saveCustomer,
                         style: FilledButton.styleFrom(
                           backgroundColor: theme.colorScheme.primary,
                           foregroundColor: theme.colorScheme.onPrimary,
@@ -226,16 +205,7 @@ class _AddCustomerScreenState extends ConsumerState<AddCustomerScreen> {
                             borderRadius: BorderRadius.circular(16),
                           ),
                         ),
-                        child: _isSaving
-                            ? const SizedBox(
-                                width: 22,
-                                height: 22,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.5,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Text('Save Customer'),
+                        child: const Text('Save Customer'),
                       ),
                     ),
                   ],

@@ -5,7 +5,7 @@
   <br>
   <h3>Track money you give and receive with a simple digital ledger</h3>
   
-  [![Download APK](https://img.shields.io/badge/Download-APK-blue?style=for-the-badge&logo=android)](https://github.com/0xrohitsen/MyKhata/releases/download/v1.0.1/app-release.apk)
+  [![Download APK](https://img.shields.io/badge/Download-APK-blue?style=for-the-badge&logo=android)](https://github.com/0xrohitsen/MyKhata/releases/download/v1.0.1/MyKhata_v1.0.1.apk)
   
   <p>🚀 <strong>55.5MB</strong> • 📱 <strong>Android 8.0+</strong> • 🆓 <strong>Free & Open Source</strong></p>
 </div>
@@ -15,10 +15,10 @@
 ## 📱 App Screenshots
 
 <p align="center">
-  <img src="assets/images/screenshots/login-screen.png" width="24%" alt="Secure Google Sign-In">
-  <img src="assets/images/screenshots/home-screen.png" width="24%" alt="Dashboard & Customer List">
-  <img src="assets/images/screenshots/customer-details-screen.png" width="24%" alt="Transaction History">  
-  <img src="assets/images/screenshots/settings-screen.png" width="24%" alt="Settings & Themes">
+  <img src="assets/images/screenshots/1.png" width="24%" alt="App Screenshot 1">
+  <img src="assets/images/screenshots/2.png" width="24%" alt="App Screenshot 2">
+  <img src="assets/images/screenshots/3.png" width="24%" alt="App Screenshot 3">  
+  <img src="assets/images/screenshots/4.png" width="24%" alt="App Screenshot 4">
 </p>
 
 <p align="center">
